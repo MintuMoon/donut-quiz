@@ -1,0 +1,57 @@
+/* Додаткові стилі для блоку історії результатів */
+.history-box {
+    margin-top: 35px;
+    padding-top: 25px;
+    border-top: 2px dashed rgba(0, 0, 0, 0.08);
+    text-align: left;
+    display: none; /* показується тільки якщо є записи */
+}
+
+body.theme-cyber .history-box {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.history-box h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: var(--primary);
+}
+
+.history-box ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.history-box li {
+    font-size: 0.95rem;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 10px;
+    padding: 10px 14px;
+    border-left: 4px solid var(--primary);
+}
+
+body.theme-cyber .history-box li {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.clear-history-btn {
+    background: none;
+    border: none;
+    color: #a0aec0;
+    font-family: "Quicksand", sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: color 0.2s;
+}
+
+.clear-history-btn:hover {
+    color: var(--primary-hover);
+}
