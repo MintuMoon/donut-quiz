@@ -51,6 +51,17 @@ body {
     transition: background 0.5s ease;
 }
 
+/* Fullscreen Confetti Canvas */
+#confetti-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 100;
+}
+
 .bg-sphere {
     position: absolute;
     border-radius: 50%;
@@ -347,4 +358,8 @@ body.theme-cyber .dashboard-panel li {
 
 .clear-history-btn:hover {
     color: var(--primary-hover);
+}
+
+body.theme-cyber #share-btn {
+    color: #ffffff;
 }
