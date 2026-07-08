@@ -1,6 +1,21 @@
-// Base handwritten questions (9 elements)
+// Secret Question
+const secretQuestion = {
+    q: "(This is a secret question, you are lucky!) Choose your ultimate destiny:",
+    isSecret: true,
+    category: "secret",
+    a: [
+        { text: "A life of quiet, peaceful comfort", type: "classic" },
+        { text: "A never-ending, colorful festival", type: "sprinkles" },
+        { text: "A deep, passionate love story", type: "jelly" },
+        { text: "Absolute zen and inner harmony", type: "matcha" },
+        { text: "A wild, rule-breaking adventure", type: "bacon" }
+    ]
+};
+
+// 9 Base Questions with explicit categories
 const baseQuestions = [
     {
+        category: "base_activity",
         q: "What is your ideal weekend activity?",
         a: [
             { text: "Reading a book under a warm blanket", type: "classic" },
@@ -11,6 +26,7 @@ const baseQuestions = [
         ]
     },
     {
+        category: "base_color",
         q: "Choose a color palette that speaks to you:",
         a: [
             { text: "Soft beige and warm cream", type: "classic" },
@@ -21,6 +37,7 @@ const baseQuestions = [
         ]
     },
     {
+        category: "base_stress",
         q: "How do you usually handle stressful situations?",
         a: [
             { text: "I stick to my usual routine to feel safe", type: "classic" },
@@ -31,6 +48,7 @@ const baseQuestions = [
         ]
     },
     {
+        category: "base_superpower",
         q: "If you could have one superpower, what would it be?",
         a: [
             { text: "Teleportation (to get home instantly)", type: "classic" },
@@ -41,6 +59,7 @@ const baseQuestions = [
         ]
     },
     {
+        category: "base_season",
         q: "What is your favorite season?",
         a: [
             { text: "Autumn - cozy sweaters and warm drinks", type: "classic" },
@@ -51,6 +70,7 @@ const baseQuestions = [
         ]
     },
     {
+        category: "base_pet",
         q: "Pick a perfect pet:",
         a: [
             { text: "A loyal and calm Golden Retriever", type: "classic" },
@@ -61,6 +81,7 @@ const baseQuestions = [
         ]
     },
     {
+        category: "base_morning",
         q: "What is your morning routine?",
         a: [
             { text: "A simple cup of coffee and a quiet breakfast", type: "classic" },
@@ -71,6 +92,7 @@ const baseQuestions = [
         ]
     },
     {
+        category: "base_music",
         q: "What genre of music do you listen to the most?",
         a: [
             { text: "Classic rock or lo-fi beats", type: "classic" },
@@ -81,6 +103,7 @@ const baseQuestions = [
         ]
     },
     {
+        category: "base_vacation",
         q: "Where is your dream vacation destination?",
         a: [
             { text: "A cozy cabin in the mountains", type: "classic" },
@@ -92,7 +115,7 @@ const baseQuestions = [
     }
 ];
 
-// Nouns & Templates for generating 182 more questions
+// Data for Generating 182 additional questions (26 topics * 7 prompts)
 const nouns = [
     { name: "planet", classic: "Saturn", sprinkles: "Jupiter", jelly: "Venus", matcha: "Neptune", bacon: "Mars" },
     { name: "gemstone", classic: "Diamond", sprinkles: "Opal", jelly: "Ruby", matcha: "Jade", bacon: "Obsidian" },
@@ -133,11 +156,16 @@ const prompts = [
 ];
 
 // Generator logic to create 191 normal questions
-let normalQuestions = [...baseQuestions];
+let normalQuestions = [];
+baseQuestions.forEach(q => {
+    normalQuestions.push(q);
+});
+
 nouns.forEach(noun => {
     prompts.forEach(prompt => {
         const questionText = prompt.replace("[X]", noun.name);
         normalQuestions.push({
+            category: noun.name, // Matches the noun key to prevent repeating topics
             q: questionText,
             a: [
                 { text: noun.classic, type: "classic" },
@@ -150,7 +178,7 @@ nouns.forEach(noun => {
     });
 });
 
-// Final crop to match hidden 191 normal + 1 secret config
+// Final crop to match hidden config
 normalQuestions = normalQuestions.slice(0, 191);
 
 // Result mappings definitions
