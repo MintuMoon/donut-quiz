@@ -17,6 +17,9 @@
 </head>
 <body class="theme-candy">
 
+    <!-- Interactive Canvas overlay for confetti particle system -->
+    <canvas id="confetti-canvas"></canvas>
+
     <!-- Decorative background blobs -->
     <div class="bg-sphere sphere-1"></div>
     <div class="bg-sphere sphere-2"></div>
@@ -41,6 +44,13 @@
                         <option value="candy">🍬 Sweet Candy</option>
                         <option value="matcha">🍵 Cozy Matcha</option>
                         <option value="cyber">⚡ Cyber Bacon</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="sound-select">Sound Effects:</label>
+                    <select id="sound-select">
+                        <option value="on">🔊 Enabled</option>
+                        <option value="off">🔇 Disabled</option>
                     </select>
                 </div>
             </div>
@@ -81,7 +91,12 @@
             <p class="result-label" id="result-user-greeting">Your Result</p>
             <div id="result-title" class="result-title">Classic Glazed</div>
             <div id="result-description" class="result-description">Loading description...</div>
-            <button class="btn" id="restart-btn">Take Quiz Again</button>
+            
+            <!-- Action buttons -->
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <button class="btn" id="restart-btn">Take Quiz Again</button>
+                <button class="btn" id="share-btn" style="background: rgba(0,0,0,0.15); color: var(--text); box-shadow: none; font-size: 1rem; padding: 10px 25px;">Copy Result Link 📋</button>
+            </div>
         </div>
 
     </div>
