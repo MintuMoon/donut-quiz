@@ -1,101 +1,90 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Which Donut Are You? - Personality Quiz</title>
-        <!-- Шрифти -->
-        <link
-            href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap"
-            rel="stylesheet"
-        />
-        <!-- Стилі -->
-        <link rel="stylesheet" href="style.css" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Which Donut Are You? - Personality Quiz</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Scripts loaded in precise order -->
+    <script src="config.js" defer></script>
+    <script src="questions.js" defer></script>
+    <script src="storage.js" defer></script>
+    <script src="script.js" defer></script>
+</head>
+<body class="theme-candy">
 
-        <!-- Скрипти завантажуються суворо по черзі -->
-        <script src="config.js" defer></script>
-        <script src="questions.js" defer></script>
-        <script src="storage.js" defer></script>
-        <script src="script.js" defer></script>
-    </head>
-    <body class="theme-candy">
-        <!-- Декоративні сфери на фоні -->
-        <div class="bg-sphere sphere-1"></div>
-        <div class="bg-sphere sphere-2"></div>
+    <!-- Decorative background blobs -->
+    <div class="bg-sphere sphere-1"></div>
+    <div class="bg-sphere sphere-2"></div>
 
-        <div class="quiz-container">
-            <!-- СТАРТОВИЙ ЕКРАН -->
-            <div id="start-screen" class="screen active">
-                <div class="donut-icon">🍩</div>
-                <h1>Which Donut Are You?</h1>
-                <p class="subtitle">
-                    Discover your true sweet personality by answering random
-                    questions!
-                </p>
-
-                <!-- Налаштування персоналізації -->
-                <div class="personalization-box">
-                    <div class="input-group">
-                        <label for="username-input">Enter Your Name:</label>
-                        <input
-                            type="text"
-                            id="username-input"
-                            placeholder="Your name..."
-                            maxlength="20"
-                        />
-                    </div>
-                    <div class="input-group">
-                        <label for="theme-select">Choose Theme:</label>
-                        <select id="theme-select">
-                            <option value="candy">🍬 Sweet Candy</option>
-                            <option value="matcha">🍵 Cozy Matcha</option>
-                            <option value="cyber">⚡ Cyber Bacon</option>
-                        </select>
-                    </div>
+    <div class="quiz-container">
+        
+        <!-- START SCREEN -->
+        <div id="start-screen" class="screen active">
+            <div class="donut-icon">🍩</div>
+            <h1>Which Donut Are You?</h1>
+            <p class="subtitle">Discover your true sweet personality by answering random questions!</p>
+            
+            <!-- Personalization Settings -->
+            <div class="personalization-box">
+                <div class="input-group">
+                    <label for="username-input">Enter Your Name:</label>
+                    <input type="text" id="username-input" placeholder="Your name..." maxlength="20">
                 </div>
+                <div class="input-group">
+                    <label for="theme-select">Choose Theme:</label>
+                    <select id="theme-select">
+                        <option value="candy">🍬 Sweet Candy</option>
+                        <option value="matcha">🍵 Cozy Matcha</option>
+                        <option value="cyber">⚡ Cyber Bacon</option>
+                    </select>
+                </div>
+            </div>
 
-                <button class="btn" id="start-btn">Start Quiz</button>
+            <button class="btn" id="start-btn">Start Quiz</button>
 
-                <!-- Блок історії результатів (створює відчуття професійного додатка) -->
-                <div id="history-box" class="history-box">
+            <!-- Dashboard: Stats & History -->
+            <div class="dashboard-grid">
+                <!-- Match History -->
+                <div id="history-box" class="dashboard-panel">
                     <h3>Recent Matches:</h3>
-                    <ul id="history-list">
-                        <!-- Сюди JS підставлятиме результати з пам'яті -->
-                    </ul>
-                    <button id="clear-history-btn" class="clear-history-btn">
-                        Clear History
-                    </button>
+                    <ul id="history-list"></ul>
+                </div>
+                <!-- Personal Donut Stats -->
+                <div id="stats-box" class="dashboard-panel">
+                    <h3>Your Donut Stats:</h3>
+                    <ul id="stats-list"></ul>
                 </div>
             </div>
-
-            <!-- ЕКРАН ТЕСТУ -->
-            <div id="quiz-screen" class="screen">
-                <div class="progress-container">
-                    <div id="progress-bar" class="progress-bar"></div>
-                </div>
-                <div id="question-number" class="question-number">
-                    Question 1 of 20
-                </div>
-                <div id="question-text" class="question-text">
-                    Loading question...
-                </div>
-                <div id="answers-list" class="answers-list">
-                    <!-- Варіанти відповідей -->
-                </div>
-            </div>
-
-            <!-- ЕКРАН РЕЗУЛЬТАТУ -->
-            <div id="result-screen" class="screen">
-                <div class="donut-icon" id="result-emoji">🍩</div>
-                <p class="result-label" id="result-user-greeting">
-                    Your Result
-                </p>
-                <div id="result-title" class="result-title">Classic Glazed</div>
-                <div id="result-description" class="result-description">
-                    Loading description...
-                </div>
-                <button class="btn" id="restart-btn">Take Quiz Again</button>
-            </div>
+            
+            <!-- Clear Data Button -->
+            <button id="clear-history-btn" class="clear-history-btn" style="display: none; margin: 20px auto 0 auto;">Clear Personal Data</button>
         </div>
-    </body>
+
+        <!-- QUIZ SCREEN -->
+        <div id="quiz-screen" class="screen">
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <div id="question-number" class="question-number">Question 1 of 20</div>
+            <div id="question-text" class="question-text">Loading question...</div>
+            <div id="answers-list" class="answers-list"></div>
+        </div>
+
+        <!-- RESULT SCREEN -->
+        <div id="result-screen" class="screen">
+            <div class="donut-icon" id="result-emoji">🍩</div>
+            <p class="result-label" id="result-user-greeting">Your Result</p>
+            <div id="result-title" class="result-title">Classic Glazed</div>
+            <div id="result-description" class="result-description">Loading description...</div>
+            <button class="btn" id="restart-btn">Take Quiz Again</button>
+        </div>
+
+    </div>
+
+</body>
 </html>
