@@ -1,18 +1,16 @@
 // Local Storage manager for match logs and dynamic tallies
 const StorageManager = {
-    saveResult(userName, donutType, emoji, typeKey) {
-        // Save to general history
+    saveResult(userName, donutTypeObject, emoji, typeKey) {
         const history = this.getHistory();
         const record = {
             name: userName || "Anonymous Player",
-            type: donutType,
+            type: donutTypeObject, // Stores dictionary {en: '...', ru: '...'}
             emoji: emoji,
             date: new Date().toLocaleDateString()
         };
         history.unshift(record);
         localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(history.slice(0, 5)));
 
-        // Increment dynamic stats counter
         const stats = this.getStats();
         if (stats[typeKey] !== undefined) {
             stats[typeKey]++;
@@ -29,7 +27,7 @@ const StorageManager = {
 
     getStats() {
         const data = localStorage.getItem(CONFIG.STATS_KEY);
-        const defaultStats = { classic: 0, sprinkles: 0, jelly: 0, matcha: 0, bacon: 0 };
+        const defaultStats = { classic: 0, sprinkles: 0, jelly: 0, matcha: 0, bacon: 0, galaxy: 0, spicy: 0, cruller: 0 };
         return data ? JSON.parse(data) : defaultStats;
     },
 
