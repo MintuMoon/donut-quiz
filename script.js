@@ -1,9 +1,67 @@
 let currentQuestionIndex = 0;
 let activeQuestions = [];
-let scores = { classic: 0, sprinkles: 0, jelly: 0, matcha: 0, bacon: 0 };
+let scores = { classic: 0, sprinkles: 0, jelly: 0, matcha: 0, bacon: 0, galaxy: 0, spicy: 0, cruller: 0 };
 let userName = "";
+let currentQuizLength = 20;
+let currentLang = "en"; // Default active language state
 
-// Synthesized Sound Engine using Web Audio API
+// Multi-language UI dictionaries
+const UI_TEXT = {
+    en: {
+        startTitle: "Which Donut Are You?",
+        startSubtitle: "Discover your true sweet personality by answering random questions!",
+        labelName: "Enter Your Name:",
+        labelLang: "Language / Язык:",
+        labelTheme: "Choose Theme:",
+        labelLength: "Quiz Length:",
+        labelSound: "Sound Effects:",
+        startBtn: "Start Quiz",
+        titleHistory: "Recent Matches:",
+        titleStats: "Your Donut Stats:",
+        clearBtn: "Clear Personal Data",
+        questionNum: "Question",
+        of: "of",
+        loadingQuestion: "Loading question...",
+        resultLabel: "Your Result",
+        greetingPrefix: "Hey",
+        restartBtn: "Take Quiz Again",
+        shareBtn: "Copy Result Link 📋",
+        shareTextTemplate: "🍩 I took the Donut Quiz and matched with",
+        shareTextLinkSuffix: "Find yours here:",
+        copied: "Copied to Clipboard! ✅",
+        anonymous: "Anonymous Player",
+        wasMatched: "was matched with",
+        onDate: "on"
+    },
+    ru: {
+        startTitle: "Какой ты пончик?",
+        startSubtitle: "Узнай свой истинный сладкий характер, ответив на случайные вопросы!",
+        labelName: "Введите ваше имя:",
+        labelLang: "Язык / Language:",
+        labelTheme: "Выберите тему:",
+        labelLength: "Длина теста:",
+        labelSound: "Звуковые эффекты:",
+        startBtn: "Начать тест",
+        titleHistory: "Недавние результаты:",
+        titleStats: "Ваша статистика пончиков:",
+        clearBtn: "Сбросить личные данные",
+        questionNum: "Вопрос",
+        of: "из",
+        loadingQuestion: "Загрузка вопроса...",
+        resultLabel: "Ваш результат",
+        greetingPrefix: "Эй",
+        restartBtn: "Пройти тест снова",
+        shareBtn: "Поделиться результатом 📋",
+        shareTextTemplate: "🍩 Я прошел тест и мой пончик — это",
+        shareTextLinkSuffix: "Узнай свой результат здесь:",
+        copied: "Скопировано в буфер! ✅",
+        anonymous: "Анонимный игрок",
+        wasMatched: "получил(а) результат",
+        onDate: "от"
+    }
+};
+
+// Web Audio API synthesizer engine
 const SoundFX = {
     enabled: true,
     ctx: null,
@@ -13,42 +71,32 @@ const SoundFX = {
     playPop() {
         if (!this.enabled) return;
         if (!this.ctx) this.init();
-        
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        
         osc.type = "sine";
         osc.frequency.setValueAtTime(400, this.ctx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.1);
-        
         gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
         gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.1);
-        
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        
         osc.start();
         osc.stop(this.ctx.currentTime + 0.1);
     },
     playChime() {
         if (!this.enabled) return;
         if (!this.ctx) this.init();
-
         const now = this.ctx.currentTime;
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // Arpeggio C5, E5, G5, C6
+        const notes = [523.25, 659.25, 783.99, 1046.50];
         notes.forEach((freq, idx) => {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
-            
             osc.type = "triangle";
             osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-            
             gain.gain.setValueAtTime(0.06, now + idx * 0.08);
             gain.gain.linearRampToValueAtTime(0, now + idx * 0.08 + 0.35);
-            
             osc.connect(gain);
             gain.connect(this.ctx.destination);
-            
             osc.start(now + idx * 0.08);
             osc.stop(now + idx * 0.08 + 0.35);
         });
@@ -103,17 +151,12 @@ const Confetti = {
         if (!this.active || !this.ctx) return;
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         let remaining = false;
-        
         this.particles.forEach(p => {
             p.tiltAngle += p.tiltAngleIncremental;
             p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
             p.x += Math.sin(p.tiltAngle);
             p.tilt = Math.sin(p.tiltAngle - p.r / 2) * 5;
-
-            if (p.y < this.canvas.height) {
-                remaining = true;
-            }
-
+            if (p.y < this.canvas.height) remaining = true;
             this.ctx.beginPath();
             this.ctx.lineWidth = p.r;
             this.ctx.strokeStyle = p.color;
@@ -121,14 +164,11 @@ const Confetti = {
             this.ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
             this.ctx.stroke();
         });
-
-        if (remaining) {
-            requestAnimationFrame(() => this.loop());
-        }
+        if (remaining) requestAnimationFrame(() => this.loop());
     }
 };
 
-// Fisher-Yates Shuffling algorithm
+// Shuffling helper
 function shuffleArray(array) {
     const newArray = [...array];
     for (let i = newArray.length - 1; i > 0; i--) {
@@ -138,29 +178,40 @@ function shuffleArray(array) {
     return newArray;
 }
 
-// Group questions by category and ensure only 1 question is picked per topic
+// Map unique categories
 function getUniqueCategoryQuestions() {
     const grouped = {};
     normalQuestions.forEach(q => {
-        if (!grouped[q.category]) {
-            grouped[q.category] = [];
-        }
+        if (!grouped[q.category]) grouped[q.category] = [];
         grouped[q.category].push(q);
     });
-
     const categories = shuffleArray(Object.keys(grouped));
     const selectedQuestions = [];
-
     for (let i = 0; i < categories.length; i++) {
         const cat = categories[i];
         const randomQuestionFromCat = grouped[cat][Math.floor(Math.random() * grouped[cat].length)];
         selectedQuestions.push(randomQuestionFromCat);
     }
-
     return selectedQuestions;
 }
 
-// Render local history and dynamic stats tally on the dashboard
+// Localize starting UI text blocks
+function translateStartScreen() {
+    const t = UI_TEXT[currentLang];
+    document.getElementById('start-title').innerText = t.startTitle;
+    document.getElementById('start-subtitle').innerText = t.startSubtitle;
+    document.getElementById('label-name').innerText = t.labelName;
+    document.getElementById('label-lang').innerText = t.labelLang;
+    document.getElementById('label-theme').innerText = t.labelTheme;
+    document.getElementById('label-length').innerText = t.labelLength;
+    document.getElementById('label-sound').innerText = t.labelSound;
+    document.getElementById('start-btn').innerText = t.startBtn;
+    document.getElementById('title-history').innerText = t.titleHistory;
+    document.getElementById('title-stats').innerText = t.titleStats;
+    document.getElementById('clear-history-btn').innerText = t.clearBtn;
+}
+
+// Display tally stats and matches history logs
 function displayHistoryAndStats() {
     const historyList = document.getElementById('history-list');
     const historyBox = document.getElementById('history-box');
@@ -171,8 +222,8 @@ function displayHistoryAndStats() {
     const history = StorageManager.getHistory();
     const stats = StorageManager.getStats();
     const totalRuns = Object.values(stats).reduce((a, b) => a + b, 0);
+    const t = UI_TEXT[currentLang];
 
-    // Render matches log
     if (historyList && historyBox) {
         if (history.length === 0) {
             historyBox.style.display = 'none';
@@ -181,29 +232,31 @@ function displayHistoryAndStats() {
             historyList.innerHTML = '';
             history.forEach(item => {
                 const li = document.createElement('li');
-                li.innerHTML = `<strong>${item.name}</strong> was matched with ${item.emoji} <em>${item.type}</em> on ${item.date}`;
+                const displayName = item.name === "Anonymous Player" ? t.anonymous : item.name;
+                li.innerHTML = `<strong>${displayName}</strong>: ${item.emoji} <em>${item.type[currentLang]}</em> ${t.onDate} ${item.date}`;
                 historyList.appendChild(li);
             });
         }
     }
 
-    // Render tallies dashboard
     if (statsList && statsBox) {
         if (totalRuns === 0) {
             statsBox.style.display = 'none';
         } else {
             statsBox.style.display = 'block';
             statsList.innerHTML = `
-                <li>🍩 Classic: ${stats.classic} match(es)</li>
-                <li>🧁 Sprinkles: ${stats.sprinkles} match(es)</li>
-                <li>🍓 Jelly: ${stats.jelly} match(es)</li>
-                <li>🍵 Matcha: ${stats.matcha} match(es)</li>
-                <li>🥓 Bacon: ${stats.bacon} match(es)</li>
+                <li>🍩 ${results.classic.title[currentLang]}: ${stats.classic || 0}</li>
+                <li>🧁 ${results.sprinkles.title[currentLang]}: ${stats.sprinkles || 0}</li>
+                <li>🍓 ${results.jelly.title[currentLang]}: ${stats.jelly || 0}</li>
+                <li>🍵 ${results.matcha.title[currentLang]}: ${stats.matcha || 0}</li>
+                <li>🥓 ${results.bacon.title[currentLang]}: ${stats.bacon || 0}</li>
+                <li>🌌 ${results.galaxy.title[currentLang]}: ${stats.galaxy || 0}</li>
+                <li>🌶️ ${results.spicy.title[currentLang]}: ${stats.spicy || 0}</li>
+                <li>👑 ${results.cruller.title[currentLang]}: ${stats.cruller || 0}</li>
             `;
         }
     }
 
-    // Toggle clear button
     if (clearBtn) {
         clearBtn.style.display = (history.length > 0 || totalRuns > 0) ? 'block' : 'none';
     }
@@ -215,10 +268,11 @@ function startQuiz() {
     
     const themeSelect = document.getElementById('theme-select');
     const selectedTheme = themeSelect ? themeSelect.value : "candy";
-    
     document.body.className = `theme-${selectedTheme}`;
 
-    // Read audio toggles
+    const lengthSelect = document.getElementById('length-select');
+    currentQuizLength = lengthSelect ? parseInt(lengthSelect.value, 10) : CONFIG.QUIZ_LENGTH;
+
     const soundSelect = document.getElementById('sound-select');
     SoundFX.enabled = (soundSelect && soundSelect.value === 'on');
 
@@ -226,27 +280,45 @@ function startQuiz() {
     document.getElementById('quiz-screen').classList.add('active');
     
     currentQuestionIndex = 0;
-    scores = { classic: 0, sprinkles: 0, jelly: 0, matcha: 0, bacon: 0 };
+    scores = { classic: 0, sprinkles: 0, jelly: 0, matcha: 0, bacon: 0, galaxy: 0, spicy: 0, cruller: 0 };
     
     const includeSecret = Math.random() < CONFIG.SECRET_CHANCE; 
-    let selected = getUniqueCategoryQuestions(); // Guarantees 100% unique topics!
+    let selected = getUniqueCategoryQuestions(); 
     selected = shuffleArray(selected);
 
     if (includeSecret) {
-        let shuffledNormals = selected.slice(0, CONFIG.QUIZ_LENGTH - 1);
-        shuffledNormals.push(secretQuestion);
+        let shuffledNormals = selected.slice(0, currentQuizLength - 1);
+        
+        // Match bilingual questions for secret item
+        const localSecret = {
+            category: secretQuestion.category,
+            isSecret: secretQuestion.isSecret,
+            q: secretQuestion.q[currentLang],
+            a: secretQuestion.a[currentLang]
+        };
+        shuffledNormals.push(localSecret);
         selected = shuffleArray(shuffledNormals); 
     } else {
-        selected = selected.slice(0, CONFIG.QUIZ_LENGTH);
+        selected = selected.slice(0, currentQuizLength);
     }
 
-    activeQuestions = selected;
+    // Convert question array objects for runtime language
+    activeQuestions = selected.map(q => {
+        if (q.isSecret) return q; // Already formatted above
+        return {
+            category: q.category,
+            q: q.q[currentLang],
+            a: q.a[currentLang]
+        };
+    });
+
     loadQuestion();
 }
 
 function loadQuestion() {
     const currentQuestion = activeQuestions[currentQuestionIndex];
-    document.getElementById('question-number').innerText = `Question ${currentQuestionIndex + 1} of ${CONFIG.QUIZ_LENGTH}`;
+    const t = UI_TEXT[currentLang];
+    document.getElementById('question-number').innerText = `${t.questionNum} ${currentQuestionIndex + 1} ${t.of} ${currentQuizLength}`;
     
     const qTextElement = document.getElementById('question-text');
     qTextElement.innerText = currentQuestion.q;
@@ -257,7 +329,7 @@ function loadQuestion() {
         qTextElement.classList.remove('secret');
     }
     
-    const progressPercentage = (currentQuestionIndex / CONFIG.QUIZ_LENGTH) * 100;
+    const progressPercentage = (currentQuestionIndex / currentQuizLength) * 100;
     document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
 
     const answersList = document.getElementById('answers-list');
@@ -269,7 +341,7 @@ function loadQuestion() {
         button.classList.add('answer-option');
         button.innerText = answer.text;
         button.onclick = () => {
-            SoundFX.playPop(); // Native synth Pop
+            SoundFX.playPop();
             selectAnswer(answer.type);
         };
         answersList.appendChild(button);
@@ -280,7 +352,7 @@ function selectAnswer(type) {
     if (scores[type] !== undefined) scores[type]++;
     currentQuestionIndex++;
 
-    if (currentQuestionIndex < CONFIG.QUIZ_LENGTH) {
+    if (currentQuestionIndex < currentQuizLength) {
         loadQuestion();
     } else {
         showResult();
@@ -300,34 +372,41 @@ function showResult() {
         }
     }
 
-    const greetingText = userName ? `Hey ${userName}, Your Result` : "Your Result";
+    const t = UI_TEXT[currentLang];
+    const greetingText = userName ? `${t.greetingPrefix} ${userName}, ${t.resultLabel}` : t.resultLabel;
     document.getElementById('result-user-greeting').innerText = greetingText;
 
     const result = results[winningType];
-    document.getElementById('result-title').innerText = result.title;
+    document.getElementById('result-title').innerText = result.title[currentLang];
     document.getElementById('result-emoji').innerText = result.emoji;
-    document.getElementById('result-description').innerText = result.description;
+    document.getElementById('result-description').innerText = result.description[currentLang];
 
-    // Trigger visual confetti and audio chime celebrations
+    document.getElementById('restart-btn').innerText = t.restartBtn;
+    document.getElementById('share-btn').innerText = t.shareBtn;
+
     SoundFX.playChime();
     Confetti.start();
 
-    // Save result log
-    StorageManager.saveResult(userName, result.title, result.emoji, winningType);
+    // Map bilingual details back to unified storage logger
+    const localizedResultRecord = {
+        en: results[winningType].title.en,
+        ru: results[winningType].title.ru
+    };
+    StorageManager.saveResult(userName, localizedResultRecord, result.emoji, winningType);
 }
 
 function shareResult() {
     const resultTitle = document.getElementById('result-title').innerText;
     const resultEmoji = document.getElementById('result-emoji').innerText;
-    const shareText = `🍩 I took the Donut Quiz and matched with ${resultEmoji} ${resultTitle}! Find yours here: ${window.location.href}`;
+    const t = UI_TEXT[currentLang];
+    const shareText = `${t.shareTextTemplate} ${resultEmoji} ${resultTitle}! ${t.shareTextLinkSuffix} ${window.location.href}`;
     
     navigator.clipboard.writeText(shareText).then(() => {
         const shareBtn = document.getElementById('share-btn');
         if (shareBtn) {
-            const originalText = shareBtn.innerText;
-            shareBtn.innerText = "Copied to Clipboard! ✅";
+            shareBtn.innerText = t.copied;
             setTimeout(() => {
-                shareBtn.innerText = originalText;
+                shareBtn.innerText = t.shareBtn;
             }, 2000);
         }
     }).catch(err => {
@@ -349,6 +428,16 @@ function clearData() {
     displayHistoryAndStats();
 }
 
+// Handle dynamic language updates
+function handleLanguageChange() {
+    const langSelect = document.getElementById('lang-select');
+    if (langSelect) {
+        currentLang = langSelect.value;
+        translateStartScreen();
+        displayHistoryAndStats();
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     Confetti.init();
     
@@ -356,11 +445,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const restartBtn = document.getElementById('restart-btn');
     const clearBtn = document.getElementById('clear-history-btn');
     const shareBtn = document.getElementById('share-btn');
+    const langSelect = document.getElementById('lang-select');
     
     if (startBtn) startBtn.addEventListener('click', startQuiz);
     if (restartBtn) restartBtn.addEventListener('click', restartQuiz);
     if (clearBtn) clearBtn.addEventListener('click', clearData);
     if (shareBtn) shareBtn.addEventListener('click', shareResult);
+    if (langSelect) {
+        langSelect.addEventListener('change', handleLanguageChange);
+        currentLang = langSelect.value; // Sync on startup
+    }
 
+    translateStartScreen();
     displayHistoryAndStats();
 });
